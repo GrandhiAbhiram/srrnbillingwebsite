@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sri Raja Rajeswari Nursery</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e8b57">
+    <meta name="description" content="Invoice and quotation generator for Sri Raja Rajeswari Nursery">
+    <!-- Add this in your HTML head section -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="date=no">
+<meta name="format-detection" content="address=no">
+<meta name="format-detection" content="email=no">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+
+<!-- ================= AUTH & NAVIGATION (FLOATING, SAFE) ================= -->
+<div class="app-header no-print">
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-btn">← Back to Dashboard</a>
+    </div>
+    <div class="user-actions">
+        <span id="currentUserDisplay"></span>
+        <button id="mainLogoutBtn" class="nav-btn logout">Logout</button>
+    </div>
+</div>
+<!-- ================= END AUTH & NAVIGATION ================= -->
+
+<!-- ================= INVOICE (DO NOT TOUCH LAYOUT) ================= -->
+<div class="container" id="invoice">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <img src="logo.png" class="logo">
+        </div>
+
+        <div class="header-center">
+            <h1 class="company-name">SRI RAJA RAJESWARI NURSERY</h1>
+            <p class="company-address">
+                Damireddypalli, Kadiyam Mandal, E.G.Dt,(A.P), 533126<br>
+                Phone: 9885423422 / 9966224554<br>
+                Email: sri.order@gmail.com<br>
+                Website: https://www.srirajarajeswarinursery.in
+            </p>
+        </div>
+
+        <div class="header-right">
+            <img src="logo1.jpg" class="logo">
+            <div class="date-line">
+                Date: <input type="text" id="invoiceDate" value="DD-MM-YYYY" value="">
+            </div>
+        </div>
+    </div>
+
+    <hr class="line">
+
+   <div class="quotation-title">
+    <input type="text" id="titleInput" value="QUOTATION" class="title-input">
+</div>
+
+    <hr class="line">
+
+    <!-- CLIENT -->
+    <div class="client-section">
+        <span class="client-label">To:</span>
+        <input type="text" class="client-input"id="clientName" placeholder="Client Name">
+    </div>
+
+    <!-- TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Plant Name</th>
+                <th>Bag Size</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+        <tbody id="table-body">
+            <tr>
+                <td>1</td>
+                <td><input type="text"></td>
+                <td><input type="text" class="bag"></td>
+                <td><input type="number" class="qty" oninput="calculateRow(this)"></td>
+                <td><input type="number" class="rate" oninput="calculateRow(this)"></td>
+                <td class="subtotal">0.00</td>
+            </tr>
+        </tbody>
+
+    </table>
+
+    <!-- GRAND TOTAL -->
+    <div class="grand-total-box">
+        <div class="grand-label">Grand Total</div>
+        <div class="grand-value" id="grandTotal">0.00</div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="buttons no-print">
+        <button onclick="addRow()">Add Row</button>
+        <button onclick="downloadPDF()">Download PDF</button>
+    </div>
+
+</div>
+<!-- ================= END INVOICE ================= -->
+
+
+<!-- ================= DRAFT TOOLS (FLOATING, SAFE) ================= -->
+<div class="draft-panel no-print">
+    <input
+        type="text"
+        id="draftName"
+        placeholder="Invoice File Name"
+    >
+    <button onclick="saveDraft()">Save</button>
+    <button onclick="loadDraft()">Open</button>
+</div>
+<!-- ================= END DRAFT TOOLS ================= -->
+
+
+<!-- Notification Toast -->
+<div id="toast" class="toast hidden" style="position:fixed;top:20px;right:20px;padding:15px;background:white;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9999;transition:0.3s;opacity:0;transform:translateY(-10px);"></div>
+
+<!-- Scripts -->
+<script src="script.js"></script>
+
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/service-worker.js");
+}
+</script>
+
+</body>
+</html>

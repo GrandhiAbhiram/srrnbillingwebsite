@@ -1,0 +1,460 @@
+/* =========================
+   GENERAL PAGE STYLES
+========================= */
+body {
+    background: #eee;
+    font-family: Arial, sans-serif;
+    padding: 10px 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border: 2px solid black;
+}
+
+/* =========================
+   HEADER SECTION
+========================= */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.header-left::after {
+    content: "";
+    height: 18px;
+    display: block;
+}
+
+.header-left .logo {
+    width: 100px;
+    height: auto;
+    margin-top: -16px;
+}
+
+.header-right {
+    width: 130px;
+    text-align: center;
+}
+
+.logo {
+    width: 80px;
+}
+
+.header-center {
+    text-align: center;
+    flex: 1;
+}
+
+.company-name {
+    font-size: 30px;
+    font-weight: bold;
+    margin: 2px 0;
+    color: #d35400;
+}
+
+.company-address {
+    font-size: 14px;
+    margin-top: 2px;
+    color: #2e8b57;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+/* DATE LINE - FIXED FOR PDF */
+.date-line {
+    font-size: 13px;
+    margin-top: 10px;
+    white-space: nowrap;
+    min-width: 160px;
+    font-weight: bold;
+}
+
+/* =========================
+   SECTION DIVIDERS
+========================= */
+.line {
+    border: none;
+    border-top: 2px solid black;
+    margin: 8px 0;
+}
+
+.quotation-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin: 8px 0;
+}
+
+/* =========================
+   CLIENT DETAILS
+========================= */
+.client-section {
+    margin: 15px 0 10px 0;
+    font-size: 14px;
+    text-align: left;
+}
+
+.client-label {
+    font-weight: bold;
+    display: inline;
+}
+
+.client-input {
+    border: none;
+    border-bottom: 1px solid black;
+    width: 300px;
+    font-size: 14px;
+    padding: 3px 8px;
+    margin-left: 10px;
+    text-align: left;
+    display: inline;
+    background: transparent;
+}
+
+.client-input:focus {
+    outline: none;
+    border-bottom: 2px solid #2e8b57;
+}
+
+/* =========================
+   TABLE STYLING - FIXED FOR PDF
+========================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+    table-layout: fixed;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 3px 6px;
+    text-align: center;
+    line-height: 1.3;
+    height: 30px;
+    vertical-align: middle;
+}
+
+/* Column widths (LOCKED) */
+th:nth-child(1), td:nth-child(1) { width: 50px; }
+th:nth-child(2), td:nth-child(2) { width: 240px;
+text-align: left !important;  /* ADD this line - left align */
+    padding-left: 10px !important;}  /* Plant Name */
+
+th:nth-child(3), td:nth-child(3) { width: 70px; }
+th:nth-child(4), td:nth-child(4) { width: 70px; }
+th:nth-child(5), td:nth-child(5) { width: 90px; }
+th:nth-child(6), td:nth-child(6) { width: 150px; }  /* Total */
+td:nth-child(2) input {
+    text-align: left !important;
+    padding-left: 5px !important;
+}
+input {
+    width: 95%;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* =========================
+   GRAND TOTAL BOX
+========================= */
+.grand-total-box {
+    margin-top: 20px;
+    padding: 10px;
+    text-align: right;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.grand-label {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.grand-value {
+    display: inline-block;
+    min-width: 100px;
+    text-align: right;
+    padding: 5px 10px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.buttons {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.draft-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 10px;
+    transform: translateX(-50%);
+    background: white;
+    padding: 0px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.no-print {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.no-print input,
+.no-print button {
+    margin: 5px;
+}
+
+/* =========================
+   TITLE INPUT
+========================= */
+.title-input {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    border: none;
+    background: transparent;
+    width: 100%;
+    padding: 0;
+    margin: 8px 0;
+    outline: none;
+    cursor: text;
+}
+
+.title-input:focus {
+    border-bottom: 1px dashed #ccc;
+}
+
+/* =========================
+   DATE INPUT CLEANUP
+========================= */
+/*
+input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 0;
+}
+
+/* =========================
+   PRINT RULES (CRITICAL) - UPDATED FOR PDF
+========================= */
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .title-input {
+        border: none !important;
+        background: transparent !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        color: black !important;
+    }
+
+    .container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* KEEP COLORS IN PDF */
+    .company-name {
+        color: #d35400 !important;
+    }
+    
+    .company-address {
+        color: #2e8b57 !important;
+    }
+
+    /* FIX DATE LINE FOR PDF */
+    .date-line {
+        display: block !important;
+        visibility: visible !important;
+        white-space: nowrap !important;
+        margin-top: 10px !important;
+        font-size: 13px !important;
+        color: black !important;
+        min-width: 160px !important;
+        text-align: center !important;
+    }
+
+    .date-line span {
+        display: inline !important;
+        visibility: visible !important;
+        font-weight: bold !important;
+        color: black !important;
+        margin-left: 5px !important;
+    }
+
+    /* ENSURE HEADER-RIGHT IS VISIBLE */
+    .header-right {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* CLIENT SECTION IN PDF */
+    .client-section {
+        white-space: nowrap !important;
+    }
+    
+    .client-label {
+        display: inline !important;
+    }
+    
+    .client-input {
+        display: inline !important;
+        border: none !important;
+        border-bottom: 1px solid black !important;
+        text-align: left !important;
+        color: black !important;
+    }
+
+    /* TABLE BORDERS IN PDF */
+    table {
+        border: 1px solid #000 !important;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+    }
+    
+    th, td {
+        border: 1px solid #000 !important;
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: #000 !important;
+        padding: 3px 6px !important;
+    }
+    
+    /* MAKE SURE ALL CONTENT IN TABLE CELLS IS VISIBLE */
+    th, td, th *, td * {
+        visibility: visible !important;
+        color: #000 !important;
+    }
+
+    /* HIDE INPUT BORDERS BUT KEEP TEXT VISIBLE */
+    input, input * {
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        -webkit-box-shadow: none !important;
+        box-shadow: none !important;
+        color: #000 !important;
+    }
+
+    /* STYLE FOR SPANS THAT REPLACE INPUTS DURING PRINT */
+    span {
+        display: inline-block !important;
+        width: 100% !important;
+        border: none !important;
+        color: #000 !important;
+    }
+
+    .header, .header * {
+        visibility: visible !important;
+    }
+
+    #invoice {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* HIDE EVERYTHING EXCEPT THE INVOICE */
+    body * {
+        visibility: hidden;
+    }
+
+    #invoice,
+    #invoice * {
+        visibility: visible !important;
+    }
+
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+}
+
+/* =========================
+   APP HEADER STYLES
+========================= */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0f172a;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    color: white;
+}
+
+.nav-btn {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-btn.logout {
+    color: #ef4444;
+}
+
+.nav-btn.logout:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 14px;
+}

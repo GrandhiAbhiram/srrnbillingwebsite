@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SRRN Billing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>SRRN Billing</h2>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="index.html" class="nav-item">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Create New Bill</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <span id="userNameDisplay">User</span>
+                </div>
+                <button id="logoutBtn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Welcome, <span id="headerUserName">User</span></h1>
+                <p>Manage your invoices and quotes efficiently.</p>
+            </header>
+            
+            <div class="content-body">
+                <div class="action-bar">
+                    <h2 class="section-title">Recent Bills</h2>
+                    <a href="index.html" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Bill
+                    </a>
+                </div>
+                
+                <div class="table-container">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice Name</th>
+                                <th>Date</th>
+                                <th>Client Name</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billsTableBody">
+                            <!-- Bills injected here by JS -->
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding: 20px;">Loading your bills...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
