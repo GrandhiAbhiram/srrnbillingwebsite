@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const db = require('./db');
+require('dotenv').config(); // Load variables from .env if present
+const db = require('./db'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,11 @@ app.use(cors());
 app.use(express.json());
 // Serve static frontend files
 app.use(express.static(path.join(__dirname)));
+
+// Verify Database Connection Environment Variable is set
+if (!process.env.DATABASE_URL) {
+    console.warn("WARNING: DATABASE_URL is not set. The app will crash if it tries to connect to the DB.");
+}
 
 // =======================
 // AUTHENTICATION ROUTES
@@ -26,59 +32,66 @@ app.post('/api/register', async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const stmt = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)');
+        // Postgres uses $1, $2 for params and RETURNING to get the inserted id
+        const result = await db.query(
+            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id',
+            [username, hashedPassword]
+        );
         
-        stmt.run(username, hashedPassword, function(err) {
-            if (err) {
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    return res.status(400).json({ error: 'Username already exists' });
-                }
-                return res.status(500).json({ error: 'Database error' });
-            }
-            res.status(201).json({ message: 'User registered successfully', userId: this.lastID });
-        });
-        stmt.finalize();
+        res.status(201).json({ message: 'User registered successfully', userId: result.rows[0].id });
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        if (err.code === '23505') { // Postgres unique violation error code
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
     }
 });
 
 // Login
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ error: 'Username and password required' });
     }
 
-    db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
+    try {
+        const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = result.rows[0];
+
         if (!user) return res.status(401).json({ error: 'Invalid username or password' });
 
         const match = await bcrypt.compare(password, user.password_hash);
         if (!match) return res.status(401).json({ error: 'Invalid username or password' });
 
-        // In a real production app, use JWT. Here we just return the user ID to store in localStorage for simplicity.
         res.json({ message: 'Login successful', user: { id: user.id, username: user.username } });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
-// Forgot Password (Mock Reset - just updating password directly)
+// Forgot Password
 app.post('/api/reset-password', async (req, res) => {
     const { username, newPassword } = req.body;
     if (!username || !newPassword) {
         return res.status(400).json({ error: 'Username and new password required' });
     }
 
-    db.get('SELECT id FROM users WHERE username = ?', [username], async (err, user) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
+    try {
+        const result = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+        const user = result.rows[0];
+
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        db.run('UPDATE users SET password_hash = ? WHERE id = ?', [hashedPassword, user.id], function(err) {
-            if (err) return res.status(500).json({ error: 'Database error' });
-            res.json({ message: 'Password reset successful' });
-        });
-    });
+        await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashedPassword, user.id]);
+        
+        res.json({ message: 'Password reset successful' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // =======================
@@ -86,71 +99,93 @@ app.post('/api/reset-password', async (req, res) => {
 // =======================
 
 // Save a bill
-app.post('/api/bills', (req, res) => {
+app.post('/api/bills', async (req, res) => {
     const { userId, invoiceName, date, clientName, title, rows } = req.body;
     if (!userId || !invoiceName) {
         return res.status(400).json({ error: 'User ID and Invoice Name required' });
     }
 
-    // Check if a bill with this name already exists for this user to update it, otherwise insert new
-    db.get('SELECT id FROM bills WHERE user_id = ? AND invoice_name = ?', [userId, invoiceName], (err, row) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
-
+    try {
+        // Check if exists
+        const checkResult = await db.query(
+            'SELECT id FROM bills WHERE user_id = $1 AND invoice_name = $2', 
+            [userId, invoiceName]
+        );
+        
         const rowsJson = JSON.stringify(rows);
 
-        if (row) {
+        if (checkResult.rows.length > 0) {
             // Update existing
-            db.run(
-                'UPDATE bills SET date = ?, client_name = ?, title = ?, rows_json = ? WHERE id = ?',
-                [date, clientName, title, rowsJson, row.id],
-                function(err) {
-                    if (err) return res.status(500).json({ error: 'Failed to update bill' });
-                    res.json({ message: 'Bill updated successfully', billId: row.id });
-                }
+            const rowId = checkResult.rows[0].id;
+            await db.query(
+                'UPDATE bills SET date = $1, client_name = $2, title = $3, rows_json = $4 WHERE id = $5',
+                [date, clientName, title, rowsJson, rowId]
             );
+            res.json({ message: 'Bill updated successfully', billId: rowId });
         } else {
             // Insert new
-            db.run(
-                'INSERT INTO bills (user_id, invoice_name, date, client_name, title, rows_json) VALUES (?, ?, ?, ?, ?, ?)',
-                [userId, invoiceName, date, clientName, title, rowsJson],
-                function(err) {
-                    if (err) return res.status(500).json({ error: 'Failed to save bill' });
-                    res.json({ message: 'Bill saved successfully', billId: this.lastID });
-                }
+            const insertResult = await db.query(
+                `INSERT INTO bills (user_id, invoice_name, date, client_name, title, rows_json) 
+                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+                [userId, invoiceName, date, clientName, title, rowsJson]
             );
+            res.json({ message: 'Bill saved successfully', billId: insertResult.rows[0].id });
         }
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // Get all bills for a user
-app.get('/api/bills/:userId', (req, res) => {
+app.get('/api/bills/:userId', async (req, res) => {
     const userId = req.params.userId;
-    db.all('SELECT id, invoice_name, date, client_name, title FROM bills WHERE user_id = ? ORDER BY id DESC', [userId], (err, rows) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
-        res.json(rows);
-    });
+    try {
+        const result = await db.query(
+            'SELECT id, invoice_name, date, client_name, title FROM bills WHERE user_id = $1 ORDER BY id DESC', 
+            [userId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // Get specific bill by name for a user
-app.get('/api/bills/:userId/:invoiceName', (req, res) => {
+app.get('/api/bills/:userId/:invoiceName', async (req, res) => {
     const { userId, invoiceName } = req.params;
-    db.get('SELECT * FROM bills WHERE user_id = ? AND invoice_name = ?', [userId, invoiceName], (err, row) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
-        if (!row) return res.status(404).json({ error: 'Bill not found' });
+    try {
+        const result = await db.query(
+            'SELECT * FROM bills WHERE user_id = $1 AND invoice_name = $2', 
+            [userId, invoiceName]
+        );
         
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Bill not found' });
+        
+        const row = result.rows[0];
         row.rows = JSON.parse(row.rows_json);
         delete row.rows_json;
         res.json(row);
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // Delete a bill
-app.delete('/api/bills/:userId/:invoiceName', (req, res) => {
+app.delete('/api/bills/:userId/:invoiceName', async (req, res) => {
     const { userId, invoiceName } = req.params;
-    db.run('DELETE FROM bills WHERE user_id = ? AND invoice_name = ?', [userId, invoiceName], function(err) {
-        if (err) return res.status(500).json({ error: 'Database error' });
+    try {
+        await db.query(
+            'DELETE FROM bills WHERE user_id = $1 AND invoice_name = $2', 
+            [userId, invoiceName]
+        );
         res.json({ message: 'Bill deleted successfully' });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
 // =======================
